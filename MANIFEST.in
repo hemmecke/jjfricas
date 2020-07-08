@@ -1,4 +1,4 @@
 include jfricas/webspad.lisp
-include jfricas/kspec/kernel.json
+include jfricas/fricaskernel.py
 include LICENSE
 include README.rst
