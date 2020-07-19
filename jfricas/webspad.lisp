@@ -165,17 +165,26 @@
          (s-algebra   boot::|$algebraOutputStream|)
          (s-tex       boot::|$texOutputStream|)
          (s-mathml    boot::|$mathmlOutputStream|)
-         (s-texmacs   boot::|$texmacsOutputStream|))
+         (s-texmacs   boot::|$texmacsOutputStream|)
+         (s           nil))
 
     ;;; create empty streams
     (setf boot::*standard-output*        (make-string-output-stream))
     (setf boot::*error-output*           boot::*standard-output*)
-    (setf boot::|$algebraOutputStream|   boot::*standard-output*)
-    (setf boot::|$texOutputStream|       boot::*standard-output*)
-    (setf boot::|$mathmlOutputStream|    boot::*standard-output*)
-    (setf boot::|$texmacsOutputStream|   boot::*standard-output*)
-    (if formattedp
-        (setf boot::|$formattedOutputStream| boot::*standard-output*))
+    ;;; FriCAS commit eb8d9a0e08f9cc56f8866f46d4c82d8c33e809eb
+    ;;; introduced a new data format for output streams. They are now
+    ;;; pairs of the form (must-close-p actual-lisp-stream). This very
+    ;;; commit also introduced a function boot::|mkOutputConsoleStream|
+    ;;; which we use to figure out on the underlying FriCAS version is.
+    ;;; We stored this in the variable newoutputstreamp.
+    (setf s (if (fboundp 'boot::|mkOutputConsoleStream|)
+                (boot::|mkOutputConsoleStream|)
+              boot::*standard-output*))
+    (setf boot::|$algebraOutputStream|   s)
+    (setf boot::|$texOutputStream|       s)
+    (setf boot::|$mathmlOutputStream|    s)
+    (setf boot::|$texmacsOutputStream|   s)
+    (if formattedp (setf boot::|$formattedOutputStream| s))
 
     ;;; eval and return true if there was an error
     (setf (r-error? data) (if (boot::|webspad-parseAndEvalStr| input) "T" "F"))
